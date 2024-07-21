@@ -10,7 +10,7 @@ import 'package:weather_ui/Components/waiting_display.dart';
 import 'package:weather_ui/Widgets/weather_display.dart';
 import 'package:weather_ui/Components/day_weather_card.dart';
 import 'package:intl/intl.dart';
-
+import 'package:geolocator/geolocator.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -56,6 +56,7 @@ class WeatherData {
           weatherCode: (code <= 1003 && is_day == 0  ? code+1  : code )
       ));
     }
+    print("Finished today hours");
     for (var h = 0; h < 12-remainingHoursInDay(curr_t) ; h++){
       final code = json["forecast"]["forecastday"][1]["hour"][h]["condition"]["code"];
       final is_day = json["forecast"]["forecastday"][0]["hour"][h]["is_day"];
@@ -66,6 +67,7 @@ class WeatherData {
           weatherCode: (code <= 1003 && is_day == 0  ? code+1  : code )
       ));
     }
+    print("Finished REM hours");
     nextDays.add(
         DayWeatherData(
             dayName: "Today",
@@ -82,7 +84,8 @@ class WeatherData {
         )
     );
 
-    for(var d = 2; d < 7; d++){
+    for(var d = 2; d < 3; d++){
+
       nextDays.add(
             DayWeatherData(
           dayName: DateFormat('EEEE').format(DateTime.parse(json["forecast"]["forecastday"][d]["date"])) ,
@@ -90,9 +93,11 @@ class WeatherData {
           weatherCode: json["forecast"]["forecastday"][d]["day"]["condition"]["code"]
         )
       );
+
     }
+
     final weatherDataObj = WeatherData(
-        region: json["location"]["region"],
+        region: json["location"]["name"],
         tempC: json["current"]["temp_c"],
         maxTempC: json["forecast"]["forecastday"][0]["day"]["maxtemp_c"],
         minTempC: json["forecast"]["forecastday"][0]["day"]["mintemp_c"],
@@ -117,11 +122,13 @@ class HourWeatherData {
 
 class _HomePageState extends State<HomePage> {
   late Future<WeatherData> futData;
+
   final sharedPrefsWeatherDataKey = "last_ret_data";
   @override
   void initState() {
     super.initState();
     futData = _loadWeatherData();
+
   }
   Future<void> _saveWeatherDataToDisk(String jsonSourceData) async{
     final sharedPrefs = await SharedPreferences.getInstance();
@@ -129,23 +136,31 @@ class _HomePageState extends State<HomePage> {
 
   }
   Future<WeatherData> _loadWeatherData() async {
+    Position uPosData = await _determinePosition();
+
     final sharedPrefs = await SharedPreferences.getInstance();
     try {
       final result = await InternetAddress.lookup('example.com');
       if (!(result.isNotEmpty && result[0].rawAddress.isNotEmpty)) {
+
         throw Exception("no network connection");
       }
+      print("${uPosData.latitude},${uPosData.longitude}");
       final resp = await get(Uri.parse(
-          "http://api.weatherapi.com/v1/forecast.json?key=b982eb0a3eca4f03934100251242806&q=Guelma&days=8"));
+          "http://api.weatherapi.com/v1/forecast.json?key=b982eb0a3eca4f03934100251242806&q=${uPosData.latitude},${uPosData.longitude}&days=8"));
       if (resp.statusCode == 200) {
+
         final data = WeatherData.fromJson(
             jsonDecode(resp.body) as Map<String, dynamic>);
         _saveWeatherDataToDisk(resp.body);
+
         return data;
       } else {
+
         throw Exception("Error during data fetching.");
       }
     } catch (e) {
+      print(e.toString());
       await Future.delayed(Duration(seconds: 1));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -157,9 +172,49 @@ class _HomePageState extends State<HomePage> {
         final oldWeatherData = WeatherData.fromJson(jsonDecode(savedWeatherData) as Map<String,dynamic>);
         return oldWeatherData;
       }
+
       throw Exception("No data!");
     }
   }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,7 +247,9 @@ class _HomePageState extends State<HomePage> {
                             future: futData,
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
-                                return WeatherDisplay(weatherData: snapshot.data);
+                                return WeatherDisplay(
+                                  weatherData: snapshot.data,
+                                );
                               }
                               if(snapshot.hasError){
                                 return Text("Error!");

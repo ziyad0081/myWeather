@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:weather_ui/Components/day_weather_card.dart';
 import 'package:weather_ui/Components/hour_weather_card.dart';
 import 'package:weather_ui/Pages/weather_home.dart';
@@ -17,9 +18,11 @@ String _formattedTimeFromTimeStamp(int timestamp){
 
 class WeatherDisplay extends StatefulWidget {
   final WeatherData? weatherData;
+
   const WeatherDisplay({
     super.key,
-    required this.weatherData
+    required this.weatherData,
+
   });
 
 
@@ -36,8 +39,10 @@ class _WeatherDisplayState extends State<WeatherDisplay> {
       children: [
         const SizedBox(height: 100,),
         Text("${widget.weatherData?.region}",
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 35,
+
           ),
         ),
         Text(
