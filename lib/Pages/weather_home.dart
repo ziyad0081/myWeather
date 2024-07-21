@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_ui/Components/waiting_display.dart';
+import 'package:weather_ui/Components/icon_map.dart';
 import 'package:weather_ui/Widgets/weather_display.dart';
 import 'package:weather_ui/Components/day_weather_card.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -27,6 +29,7 @@ class WeatherData {
   final double maxTempC;
   final double minTempC;
   final String desc;
+  final int weatherCode;
   final List<DayWeatherData> nextDays;
   final List<HourWeatherData> nextHours;
   const WeatherData({
@@ -37,7 +40,8 @@ class WeatherData {
     required this.desc,
     required this.nextHours,
     required this.nextDays,
-    required this.lastUpdateEpoch
+    required this.lastUpdateEpoch,
+    required this.weatherCode
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
@@ -104,7 +108,8 @@ class WeatherData {
         desc: json["current"]["condition"]["text"],
         nextHours: nextHours,
         nextDays: nextDays,
-        lastUpdateEpoch: json["current"]["last_updated_epoch"]
+        lastUpdateEpoch: json["current"]["last_updated_epoch"],
+        weatherCode: json["current"]["condition"]["code"]
     );
 
     return weatherDataObj ;
@@ -161,7 +166,7 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       print(e.toString());
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text("No internet connection!")
@@ -221,49 +226,77 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          //TODO : implement changing backgrounds
-                            image: AssetImage("images/rainy.jpeg"),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
-                        )
-                      ),
-                    )
-                ),
-                SingleChildScrollView(
-                  child: Column(
+          FutureBuilder(
+
+          future: futData,
+          builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Expanded(
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Container(
-            
-                        child: Center(
-                          child: FutureBuilder(
-                            future: futData,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return WeatherDisplay(
+                      Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  //TODO : implement changing backgrounds
+
+                                    image: AssetImage("images/${codeBgMap[snapshot.data?.weatherCode]}"),
+                                    fit: BoxFit.cover,
+                                    colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
+                                )
+                            ),
+                          )
+                      ),
+                      SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Container(
+                              child: Center(
+                                child: WeatherDisplay(
                                   weatherData: snapshot.data,
-                                );
-                              }
-                              if(snapshot.hasError){
-                                return Text("Error!");
-                              }
-                              return const ProgressWaitDisplay();
-                            },
-                          ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
+                );
+              }
+              if(snapshot.hasError){
+                return const Text("Error!");
+              }
+
+
+              return Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                //TODO : implement changing backgrounds
+                                  image: const AssetImage("images/cloudy.jpeg"),
+                                  fit: BoxFit.cover,
+                                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
+                              )
+                          ),
+                        )
+                    ),
+                    const Column(
+
+                      children: [
+                        Center(child: ProgressWaitDisplay()),
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.center,
+
+                    )
+                  ]
                 ),
-              ],
-            ),
+              );
+              },
           ),
         ],
       ),

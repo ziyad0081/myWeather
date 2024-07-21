@@ -22,14 +22,14 @@ class _HourWeatherCardState extends State<HourWeatherCard> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("${intTo24HFormat(widget.hourWeatherData.hour)}",
-          style: TextStyle(
+        Text(intTo24HFormat(widget.hourWeatherData.hour),
+          style: const TextStyle(
             fontSize: (15+1)
           )
         ),
         Icon(codeIconMap[widget.hourWeatherData.weatherCode], color: Colors.white,),
         Text("${widget.hourWeatherData.hourTempC.round()}°",
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold
           ),
         ),

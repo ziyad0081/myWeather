@@ -34,7 +34,9 @@ class _ProgressWaitDisplayState extends State<ProgressWaitDisplay> {
           const CircularProgressIndicator(color: Colors.white,),
           const SizedBox(height: 30,),
           Text("Fetching data $dots",
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+                fontWeight: FontWeight.bold),
           )
         ]
     );

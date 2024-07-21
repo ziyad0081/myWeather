@@ -25,3 +25,28 @@ Map<int, IconData> codeIconMap = {
   1279 : Symbols.thunderstorm,
   1282 : Symbols.thunderstorm,
 };
+
+Map<int, String> codeBgMap = {
+  1000 : "clear.jpg",
+  1001 : "night.jpeg",
+  1003 : "cloudy.jpeg",
+  1004 : "cloudy.jpeg",
+  1006 : "cloudy.jpeg",
+  1009 : "cloudy.jpeg",
+  1030 : "cloudy.jpeg",
+  1063 : "snowy.jpeg",
+  1135 : "cloudy.jpeg",
+  1147 : "cloudy.jpeg",
+  1153 : "rainy.jpeg",
+  1183 : "rainy.jpeg",
+  1189 : "rainy.jpeg",
+  1192 : "rainy.jpeg",
+  1195 : "rainy.jpeg",
+  1213 : "snowy.jpeg",
+  1219 : "snowy.jpeg",
+  1225 : "snowy.jpeg",
+  1273 : "thunderstorm.jpeg",
+  1276 : "thunderstorm.jpeg",
+  1279 : "thunderstorm.jpeg",
+  1282 : "thunderstorm.jpeg"
+};
