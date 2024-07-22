@@ -11,7 +11,10 @@ import 'package:weather_ui/Components/icon_map.dart';
 import 'package:weather_ui/Widgets/weather_display.dart';
 import 'package:weather_ui/Components/day_weather_card.dart';
 import 'package:intl/intl.dart';
+
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -152,7 +155,7 @@ class _HomePageState extends State<HomePage> {
       }
       print("${uPosData.latitude},${uPosData.longitude}");
       final resp = await get(Uri.parse(
-          "http://api.weatherapi.com/v1/forecast.json?key=b982eb0a3eca4f03934100251242806&q=${uPosData.latitude},${uPosData.longitude}&days=8"));
+          "http://api.weatherapi.com/v1/forecast.json?key=${dotenv.env['API_KEY']}&q=${uPosData.latitude},${uPosData.longitude}&days=8"));
       if (resp.statusCode == 200) {
 
         final data = WeatherData.fromJson(
