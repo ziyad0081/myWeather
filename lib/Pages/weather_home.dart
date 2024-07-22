@@ -277,7 +277,6 @@ class _HomePageState extends State<HomePage> {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                //TODO : implement changing backgrounds
                                   image: const AssetImage("images/cloudy.jpeg"),
                                   fit: BoxFit.cover,
                                   colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken)
@@ -286,11 +285,10 @@ class _HomePageState extends State<HomePage> {
                         )
                     ),
                     const Column(
-
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Center(child: ProgressWaitDisplay()),
                       ],
-                      mainAxisAlignment: MainAxisAlignment.center,
 
                     )
                   ]
